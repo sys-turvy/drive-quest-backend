@@ -1,11 +1,10 @@
 import express from 'express';
+import router from './routes';
 
 const app = express();
 const port = 8000;
 
-app.get('/', (req, res) => {
-  res.json({ message: 'hello' });
-});
+app.use('/api', router);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
