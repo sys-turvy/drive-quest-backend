@@ -16,12 +16,16 @@
   "description": "",
   "dependencies": {
     "@prisma/client": "^6.9.0",
+    "bcryptjs": "^3.0.2",
     "dotenv": "^16.4.5",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "prisma": "^6.9.0"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
     "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
     "nodemon": "^3.1.10",
     "pm2": "^5.3.1",
     "ts-node": "^10.9.2",
