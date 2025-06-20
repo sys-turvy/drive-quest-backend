@@ -1,26 +1,26 @@
 import { Request, Response, NextFunction } from 'express'
-import { verifyToken } from '../utils/auth'
+import jwt from 'jsonwebtoken'
 
-export const authenticate = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export interface JwtPayload {
+  id: string
+  email: string
+}
+
+export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
+  const authHeader = req.headers['authorization']
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    res.sendStatus(401) // Unauthorized
+    return;
+  }
+
+  const token = authHeader.substring(7)
+
   try {
-    const authHeader = req.headers.authorization
-    if (!authHeader) {
-      return res.status(401).json({ message: '認証が必要です' })
-    }
-
-    const token = authHeader.split(' ')[1]
-    if (!token) {
-      return res.status(401).json({ message: 'トークンが無効です' })
-    }
-
-    const decoded = verifyToken(token)
-    req.user = decoded
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string)
+    req.user = decoded as JwtPayload
     next()
-  } catch (error) {
-    return res.status(401).json({ message: '認証に失敗しました' })
+  } catch (err) {
+    res.sendStatus(403) // Forbidden
   }
 } 

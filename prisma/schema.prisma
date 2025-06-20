@@ -14,15 +14,44 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(uuid()) @db.VarChar(36)
-  userId        Int       @unique @default(autoincrement())
-  userIconUrl   String?   @db.VarChar(255)
-  userName      String    @default("guest") @db.VarChar(255)
-  email         String    @unique @db.VarChar(255)
-  password      String    @db.VarChar(255)
-  createdAt     DateTime  @default(now()) @map("create_at")
-  updatedAt     DateTime  @updatedAt @map("update_at")
-  deletedAt     DateTime? @map("delete_at")
+  // --- 基本情報 ---
+  id          String    @id @default(uuid()) @db.VarChar(36)
+  userId      Int       @unique @default(autoincrement())
+  userIconUrl String?   @db.VarChar(255)
+  userName    String    @default("guest") @db.VarChar(255)
+  email       String    @unique @db.VarChar(255)
+  password    String    @db.VarChar(255)
+
+  // --- 日時と論理削除 ---
+  createdAt   DateTime  @default(now()) @map("create_at")
+  updatedAt   DateTime  @updatedAt @map("update_at")
+  deletedAt   DateTime? @map("delete_at")
+
+  // --- リレーション (ここを更新) ---
+  // 自分が能動的に友達として追加した関係（FriendshipテーブルのuserId側）
+  friends     Friendship[] @relation("UserFriends")
+  // 自分を友達として追加している相手との関係（FriendshipテーブルのfriendId側）
+  friendOf    Friendship[] @relation("FriendOf")
 
   @@map("users")
+}
+
+// ユーザー間の友達関係を管理する中間モデル
+model Friendship {
+  // --- 自分（主体となるユーザー）のID ---
+  userId String @db.VarChar(36)
+  user   User   @relation("UserFriends", fields: [userId], references: [id], onDelete: Cascade)
+
+  // --- 相手（友達）のID ---
+  friendId String @db.VarChar(36)
+  friend   User   @relation("FriendOf", fields: [friendId], references: [id], onDelete: Cascade)
+
+  // --- 日時 ---
+  createdAt DateTime @default(now()) @map("create_at")
+  updatedAt DateTime @updatedAt @map("update_at")
+
+  // 複合プライマリキー
+  @@id([userId, friendId])
+
+  @@map("user_friends")
 }
