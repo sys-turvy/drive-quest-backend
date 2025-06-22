@@ -32,6 +32,8 @@ model User {
   friends     Friendship[] @relation("UserFriends")
   // 自分を友達として追加している相手との関係（FriendshipテーブルのfriendId側）
   friendOf    Friendship[] @relation("FriendOf")
+  // 自分の運転履歴一覧
+  drivingHistories DrivingHistory[]
 
   @@map("users")
 }
@@ -54,4 +56,17 @@ model Friendship {
   @@id([userId, friendId])
 
   @@map("user_friends")
+}
+
+model DrivingHistory {
+  drivingHistoryId String   @id @default(uuid()) @db.VarChar(36)                       // 主キー
+  userId           String   @db.VarChar(36)                           // 外部キー (Users.id)
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  drivingMileage   Decimal? @db.Decimal(10, 2)                        // 運転距離 (km)
+  durationTime     Int                                              // 運転時間 (分)
+  routeData        Json?                                            // 運転ルートのデータ
+  createdAt        DateTime @default(now()) @map("create_at")       // 作成日時
+  updatedAt        DateTime @updatedAt @map("update_at")            // 更新日時
+
+  @@map("driving_history")
 }
