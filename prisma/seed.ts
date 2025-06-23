@@ -18,7 +18,9 @@ async function main() {
   await prisma.drivingHistory.deleteMany({});
   await prisma.friendship.deleteMany({});
   await prisma.title.deleteMany({});
+  await prisma.voiceStylePrice.deleteMany({});
   await prisma.voiceStyle.deleteMany({});
+  await prisma.iconFramePrice.deleteMany({});
   await prisma.iconFrame.deleteMany({});
   await prisma.user.deleteMany({});
 
@@ -46,6 +48,22 @@ async function main() {
   }
   console.log(`Seeded ${createdIconFrames.length} icon frames`);
 
+  // Seed IconFramePrices
+  const iconFramePrices = [
+    { price: 100 },
+    { price: 200 },
+    { price: 300 },
+  ];
+  for (let i = 0; i < createdIconFrames.length; i++) {
+    await prisma.iconFramePrice.create({
+      data: {
+        iconFrameId: createdIconFrames[i].id,
+        price: iconFramePrices[i].price,
+      },
+    });
+  }
+  console.log(`Seeded ${createdIconFrames.length} icon frame prices`);
+
   // Seed VoiceStyles
   const createdVoiceStyles: any[] = [];
   for (const style of voiceStyles) {
@@ -53,6 +71,22 @@ async function main() {
     createdVoiceStyles.push(created);
   }
   console.log(`Seeded ${createdVoiceStyles.length} voice styles`);
+
+  // Seed VoiceStylePrices
+  const voiceStylePrices = [
+    { price: 0 },
+    { price: 250 },
+    { price: 250 },
+  ];
+  for (let i = 0; i < createdVoiceStyles.length; i++) {
+    await prisma.voiceStylePrice.create({
+      data: {
+        voiceStyleId: createdVoiceStyles[i].id,
+        price: voiceStylePrices[i].price,
+      },
+    });
+  }
+  console.log(`Seeded ${createdVoiceStyles.length} voice style prices`);
 
   // Seed Titles
   const createdTitles: any[] = [];

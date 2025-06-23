@@ -83,6 +83,7 @@ model IconFrame {
   updatedAt DateTime @updatedAt @map("updated_at")
   users     UserIconFrame[]
   profiles  UserProfile[]
+  price     IconFramePrice?
 
   @@map("icon_frames")
 }
@@ -95,6 +96,7 @@ model VoiceStyle {
   updatedAt  DateTime @updatedAt @map("updated_at")
   users      UserVoiceStyle[]
   profiles   UserProfile[]
+  price      VoiceStylePrice?
 
   @@map("voice_styles")
 }
@@ -162,4 +164,26 @@ model UserProfile {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("user_profiles")
+}
+
+model IconFramePrice {
+  id          Int       @id @default(autoincrement())
+  price       Int
+  iconFrameId Int       @unique
+  iconFrame   IconFrame @relation(fields: [iconFrameId], references: [id])
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("icon_frame_prices")
+}
+
+model VoiceStylePrice {
+  id           Int        @id @default(autoincrement())
+  price        Int
+  voiceStyleId Int        @unique
+  voiceStyle   VoiceStyle @relation(fields: [voiceStyleId], references: [id])
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  @@map("voice_style_prices")
 }
