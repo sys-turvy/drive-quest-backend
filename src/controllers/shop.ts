@@ -79,6 +79,86 @@ class ShopController {
       res.status(500).json({ error: 'Failed to fetch icon frames store' });
     }
   };
+
+  public purchaseIconFrame = async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    const { iconFrameId } = req.body;
+    if (!iconFrameId || isNaN(Number(iconFrameId))) {
+      res.status(400).json({ error: "iconFrameIdは必須です" });
+      return;
+    }
+    try {
+      // アイコンフレームが存在するかチェック
+      const iconFrame = await this.prisma.iconFrame.findUnique({ where: { id: Number(iconFrameId) } });
+      if (!iconFrame) {
+          res.status(404).json({ error: "アイコンフレームが存在しません" });
+          return;
+      }
+      // すでに所有しているかチェック
+      const alreadyOwned = await this.prisma.userIconFrame.findUnique({
+        where: { userId_iconFrameId: { userId: String(userId), iconFrameId: Number(iconFrameId) } },
+      });
+      if (alreadyOwned) {
+        res.status(400).json({ error: "すでにこのアイコンフレームを所有しています" });
+        return;
+      }
+      // 購入処理（UserIconFrameに追加）
+      await this.prisma.userIconFrame.create({
+        data: {
+          userId: String(userId),
+          iconFrameId: Number(iconFrameId),
+        },
+      });
+      res.status(200).json({ message: "アイコンフレームを購入しました" });
+    } catch (error) {
+      console.error("Error purchasing icon frame:", error);
+      res.status(500).json({ error: "Failed to purchase icon frame" });
+    }
+  };
+
+  public purchaseVoiceStyle = async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    const { voiceStyleId } = req.body;
+    if (!voiceStyleId || isNaN(Number(voiceStyleId))) {
+      res.status(400).json({ error: "voiceStyleIdは必須です" });
+      return;
+    }
+    try {
+      // ボイススタイルが存在するかチェック
+      const voiceStyle = await this.prisma.voiceStyle.findUnique({ where: { id: Number(voiceStyleId) } });
+      if (!voiceStyle) {
+        res.status(404).json({ error: "ボイススタイルが存在しません" });
+        return;
+      }
+      // すでに所有しているかチェック
+      const alreadyOwned = await this.prisma.userVoiceStyle.findUnique({
+        where: { userId_voiceStyleId: { userId: String(userId), voiceStyleId: Number(voiceStyleId) } },
+      });
+      if (alreadyOwned) {
+        res.status(400).json({ error: "すでにこのボイススタイルを所有しています" });
+        return;
+      }
+      // 購入処理（UserVoiceStyleに追加）
+      await this.prisma.userVoiceStyle.create({
+        data: {
+          userId: String(userId),
+          voiceStyleId: Number(voiceStyleId),
+        },
+      });
+      res.status(200).json({ message: "ボイススタイルを購入しました" });
+    } catch (error) {
+      console.error("Error purchasing voice style:", error);
+      res.status(500).json({ error: "Failed to purchase voice style" });
+    }
+  };
 }
 
 export default new ShopController(); 
