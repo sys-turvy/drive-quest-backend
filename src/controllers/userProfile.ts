@@ -201,4 +201,85 @@ export class UserProfileController {
       res.status(500).json({ error: "Internal server error" });
     }
   };
+
+  public getUserTitles = async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    try {
+      const userTitles = await prisma.userTitle.findMany({
+        where: { userId },
+        include: {
+          title: true,
+        },
+      });
+      const result = userTitles.map((ut) => ({
+        id: ut.title.id,
+        name: ut.title.name,
+        description: ut.title.description,
+        createdAt: ut.title.createdAt,
+        updatedAt: ut.title.updatedAt,
+      }));
+      res.status(200).json(result);
+    } catch (error) {
+      console.error("Error fetching user titles:", error);
+      res.status(500).json({ error: "Failed to fetch user titles" });
+    }
+  };
+
+  public getUserIconFrames = async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    try {
+      const userIconFrames = await prisma.userIconFrame.findMany({
+        where: { userId },
+        include: {
+          iconFrame: true,
+        },
+      });
+      const result = userIconFrames.map((uf) => ({
+        id: uf.iconFrame.id,
+        name: uf.iconFrame.name,
+        imgUrl: uf.iconFrame.imgUrl,
+        createdAt: uf.iconFrame.createdAt,
+        updatedAt: uf.iconFrame.updatedAt,
+      }));
+      res.status(200).json(result);
+    } catch (error) {
+      console.error("Error fetching user icon frames:", error);
+      res.status(500).json({ error: "Failed to fetch user icon frames" });
+    }
+  };
+
+  public getUserVoiceStyles = async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    try {
+      const userVoiceStyles = await prisma.userVoiceStyle.findMany({
+        where: { userId },
+        include: {
+          voiceStyle: true,
+        },
+      });
+      const result = userVoiceStyles.map((uv) => ({
+        id: uv.voiceStyle.id,
+        name: uv.voiceStyle.name,
+        ttsVoiceId: uv.voiceStyle.ttsVoiceId,
+        createdAt: uv.voiceStyle.createdAt,
+        updatedAt: uv.voiceStyle.updatedAt,
+      }));
+      res.status(200).json(result);
+    } catch (error) {
+      console.error("Error fetching user voice styles:", error);
+      res.status(500).json({ error: "Failed to fetch user voice styles" });
+    }
+  };
 } 
