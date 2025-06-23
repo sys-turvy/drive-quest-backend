@@ -23,9 +23,9 @@ model User {
   password    String    @db.VarChar(255)
 
   // --- 日時と論理削除 ---
-  createdAt   DateTime  @default(now()) @map("create_at")
-  updatedAt   DateTime  @updatedAt @map("update_at")
-  deletedAt   DateTime? @map("delete_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
 
   // --- リレーション (ここを更新) ---
   // 自分が能動的に友達として追加した関係（FriendshipテーブルのuserId側）
@@ -34,6 +34,10 @@ model User {
   friendOf    Friendship[] @relation("FriendOf")
   // 自分の運転履歴一覧
   drivingHistories DrivingHistory[]
+  userIconFrames   UserIconFrame[]
+  userVoiceStyles  UserVoiceStyle[]
+  userTitles       UserTitle[]
+  profile          UserProfile?
 
   @@map("users")
 }
@@ -49,8 +53,8 @@ model Friendship {
   friend   User   @relation("FriendOf", fields: [friendId], references: [id], onDelete: Cascade)
 
   // --- 日時 ---
-  createdAt DateTime @default(now()) @map("create_at")
-  updatedAt DateTime @updatedAt @map("update_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // 複合プライマリキー
   @@id([userId, friendId])
@@ -65,8 +69,97 @@ model DrivingHistory {
   drivingMileage   Decimal? @db.Decimal(10, 2)                        // 運転距離 (km)
   durationTime     Int                                              // 運転時間 (分)
   routeData        Json?                                            // 運転ルートのデータ
-  createdAt        DateTime @default(now()) @map("create_at")       // 作成日時
-  updatedAt        DateTime @updatedAt @map("update_at")            // 更新日時
+  createdAt        DateTime @default(now()) @map("created_at")       // 作成日時
+  updatedAt        DateTime @updatedAt @map("updated_at")            // 更新日時
 
   @@map("driving_history")
+}
+
+model IconFrame {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(255)
+  imgUrl    String   @db.Text @map("img_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  users     UserIconFrame[]
+  profiles  UserProfile[]
+
+  @@map("icon_frames")
+}
+
+model VoiceStyle {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(255)
+  ttsVoiceId String   @map("tts_voice_id") @db.VarChar(255)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  users      UserVoiceStyle[]
+  profiles   UserProfile[]
+
+  @@map("voice_styles")
+}
+
+model Title {
+  id             Int       @id @default(autoincrement())
+  name           String    @db.VarChar(255)
+  description    String?   @db.Text
+  conditionType  String?   @map("condition_type") @db.VarChar(50)
+  conditionValue String?   @map("condition_value") @db.Text
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  users          UserTitle[]
+  profiles       UserProfile[]
+
+  @@map("titles")
+}
+
+model UserIconFrame {
+  userId      String    @db.VarChar(36)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  iconFrameId Int
+  iconFrame   IconFrame @relation(fields: [iconFrameId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@id([userId, iconFrameId])
+  @@map("user_icon_frames")
+}
+
+model UserVoiceStyle {
+  userId       String     @db.VarChar(36)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  voiceStyleId Int
+  voiceStyle   VoiceStyle @relation(fields: [voiceStyleId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  @@id([userId, voiceStyleId])
+  @@map("user_voice_styles")
+}
+
+model UserTitle {
+  userId    String   @db.VarChar(36)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  titleId   Int
+  title     Title    @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([userId, titleId])
+  @@map("user_titles")
+}
+
+model UserProfile {
+  userId      String @id @db.VarChar(36)
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  totalDrivingMileage Decimal @default(0) @db.Decimal(10, 2) @map("total_driving_mileage")
+  totalDurationTime   Int     @default(0) @map("total_duration_time")
+  monthlyMileageGoal  Decimal?    @map("monthly_mileage_goal") @db.Decimal(10, 2)
+  selectedTitleId      Int?
+  selectedTitle        Title?      @relation(fields: [selectedTitleId], references: [id], onDelete: SetNull)
+  selectedIconFrameId  Int?
+  selectedIconFrame    IconFrame?  @relation(fields: [selectedIconFrameId], references: [id], onDelete: SetNull)
+  selectedVoiceStyleId Int? @default(1)
+  selectedVoiceStyle   VoiceStyle? @relation(fields: [selectedVoiceStyleId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("user_profiles")
 }

@@ -48,6 +48,16 @@ export class DriveHistoryController {
           routeData: routeData ?? null,
         },
       });
+
+      // プロフィールの統計情報を加算更新
+      await prisma.userProfile.update({
+        where: { userId },
+        data: {
+          totalDrivingMileage: { increment: drivingMileage },
+          totalDurationTime: { increment: durationTime },
+        },
+      });
+
       res.status(201).json(newHistory);
     } catch (error) {
       console.error(error);
