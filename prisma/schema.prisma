@@ -23,9 +23,9 @@ model User {
   password    String    @db.VarChar(255)
 
   // --- 日時と論理削除 ---
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  deletedAt   DateTime? @map("deleted_at")
+  createdAt   DateTime  @default(now()) @map("create_at")
+  updatedAt   DateTime  @updatedAt @map("update_at")
+  deletedAt   DateTime? @map("delete_at")
 
   // --- リレーション (ここを更新) ---
   // 自分が能動的に友達として追加した関係（FriendshipテーブルのuserId側）
@@ -38,6 +38,7 @@ model User {
   userVoiceStyles  UserVoiceStyle[]
   userTitles       UserTitle[]
   profile          UserProfile?
+  refreshTokens RefreshToken[]
 
   @@map("users")
 }
@@ -186,4 +187,15 @@ model VoiceStylePrice {
   updatedAt    DateTime   @updatedAt @map("updated_at")
 
   @@map("voice_style_prices")
+}
+
+model RefreshToken {
+  id         Int       @id @default(autoincrement())
+  token      String    @unique
+  userId     String    @db.VarChar(36)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+
+  @@map("refresh_token")
 }

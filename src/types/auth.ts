@@ -11,7 +11,10 @@ export type RegisterInput = {
 }
 
 export type LoginResponse = {
-  token: string
+  tokenPair: {
+    token: string,
+    refreshToken: string
+  }
   user: Pick<User, 'id' | 'userId' | 'email' | 'userName' | 'userIconUrl'>
 }
 

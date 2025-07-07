@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { PrismaClient } from '@prisma/client'
 import { LoginInput, LoginResponse, RegisterInput } from '../types/auth'
-import { comparePassword, generateToken, hashPassword } from '../utils/auth'
+import { comparePassword, generateToken, generateRefreshToken, hashPassword, getRefreshTokenExpiry } from '../utils/auth'
 
 export class AuthController {
   private prisma: PrismaClient
@@ -42,9 +42,21 @@ export class AuthController {
         id: user.id,
         email: user.email
       })
+      const refreshToken = generateRefreshToken()
+
+      await this.prisma.refreshToken.create({
+        data: {
+          token: refreshToken,
+          userId: user.id,
+          expiresAt: getRefreshTokenExpiry()
+        }
+      })
 
       const response: LoginResponse = {
-        token,
+        tokenPair: {
+          token,
+          refreshToken
+        },
         user: {
           id: user.id,
           userId: user.userId,
@@ -83,13 +95,22 @@ export class AuthController {
         return
       }
 
-      const token = generateToken({
-        id: user.id,
-        email: user.email
+      const token = generateToken({ id: user.id, email: user.email })
+      const refreshToken = generateRefreshToken()
+
+      await this.prisma.refreshToken.create({
+        data: {
+          token: refreshToken,
+          userId: user.id,
+          expiresAt: getRefreshTokenExpiry()
+        }
       })
 
       const response: LoginResponse = {
-        token,
+        tokenPair: {
+          token,
+          refreshToken
+        },
         user: {
           id: user.id,
           userId: user.userId,
@@ -104,5 +125,30 @@ export class AuthController {
       console.error('Login error:', error)
       res.status(500).json({ message: 'ログインに失敗しました' })
     }
+  }
+
+  public refreshToken = async (req: Request, res: Response) => {
+    const { refreshToken } = req.body
+    if (!refreshToken) {
+      res.status(400).json({ message: 'refreshToken が必要です' })
+      return
+    }
+
+    const storedToken = await this.prisma.refreshToken.findUnique({
+      where: { token: refreshToken },
+      include: { user: true }
+    })
+
+    if (!storedToken || storedToken.expiresAt < new Date()) {
+      res.status(401).json({ message: '無効なリフレッシュトークンです' })
+      return
+    }
+
+    const newToken = generateToken({
+      id: storedToken.user.id,
+      email: storedToken.user.email
+    })
+
+    res.json({ token: newToken })
   }
 } 
