@@ -28,6 +28,7 @@ class ShopController {
       const voiceStylesWithOwnership = allVoiceStyles.map((style) => ({
         id: style.id,
         name: style.name,
+        imgUrl: style.imgUrl,
         ttsVoiceId: style.ttsVoiceId,
         createdAt: style.createdAt,
         updatedAt: style.updatedAt,

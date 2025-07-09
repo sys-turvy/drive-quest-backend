@@ -93,6 +93,7 @@ model VoiceStyle {
   id         Int      @id @default(autoincrement())
   name       String   @db.VarChar(255)
   ttsVoiceId String   @map("tts_voice_id") @db.VarChar(255)
+  imgUrl     String   @db.Text @map("img_url")
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
   users      UserVoiceStyle[]
@@ -108,6 +109,7 @@ model Title {
   description    String?   @db.Text
   conditionType  String?   @map("condition_type") @db.VarChar(50)
   conditionValue String?   @map("condition_value") @db.Text
+  imgUrl         String    @db.Text @map("img_url")
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
   users          UserTitle[]

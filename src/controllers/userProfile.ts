@@ -218,6 +218,7 @@ export class UserProfileController {
       const result = userTitles.map((ut) => ({
         id: ut.title.id,
         name: ut.title.name,
+        imgUrl: ut.title.imgUrl,
         description: ut.title.description,
         createdAt: ut.title.createdAt,
         updatedAt: ut.title.updatedAt,
@@ -272,6 +273,7 @@ export class UserProfileController {
       const result = userVoiceStyles.map((uv) => ({
         id: uv.voiceStyle.id,
         name: uv.voiceStyle.name,
+        imgUrl: uv.voiceStyle.imgUrl,
         ttsVoiceId: uv.voiceStyle.ttsVoiceId,
         createdAt: uv.voiceStyle.createdAt,
         updatedAt: uv.voiceStyle.updatedAt,

@@ -1,16 +1,13 @@
+// @ts-nocheck
 import { PrismaClient } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
-import { users } from "./seed-data/users";
 import { iconFrames } from "./seed-data/iconFrames";
 import { voiceStyles } from "./seed-data/voiceStyles";
 import { titles } from "./seed-data/titles";
 
 const prisma = new PrismaClient();
 
-async function main() {
-  console.log("Seeding started...");
-
-  // Delete all data
+async function clearAll() {
   await prisma.userTitle.deleteMany({});
   await prisma.userVoiceStyle.deleteMany({});
   await prisma.userIconFrame.deleteMany({});
@@ -23,32 +20,19 @@ async function main() {
   await prisma.iconFramePrice.deleteMany({});
   await prisma.iconFrame.deleteMany({});
   await prisma.user.deleteMany({});
+}
 
-  // Seed Users
-  const createdUsers: any[] = [];
-  for (const user of users) {
-    const hashedPassword = await bcrypt.hash(user.password, 10);
-    const createdUser = await prisma.user.create({
-      data: {
-        id: user.id,
-        email: user.email,
-        userName: user.userName,
-        password: hashedPassword,
-      },
-    });
-    createdUsers.push(createdUser);
-  }
-  console.log(`Seeded ${createdUsers.length} users`);
-
-  // Seed IconFrames (1件ずつcreateしてidを取得)
+async function seedIconFrames() {
   const createdIconFrames: any[] = [];
   for (const frame of iconFrames) {
     const created = await prisma.iconFrame.create({ data: frame });
     createdIconFrames.push(created);
   }
   console.log(`Seeded ${createdIconFrames.length} icon frames`);
+  return createdIconFrames;
+}
 
-  // Seed IconFramePrices
+async function seedIconFramePrices(createdIconFrames: any[]) {
   const iconFramePrices = [
     { price: 100 },
     { price: 200 },
@@ -58,21 +42,24 @@ async function main() {
     await prisma.iconFramePrice.create({
       data: {
         iconFrameId: createdIconFrames[i].id,
-        price: iconFramePrices[i].price,
+        price: iconFramePrices[i % iconFramePrices.length].price,
       },
     });
   }
   console.log(`Seeded ${createdIconFrames.length} icon frame prices`);
+}
 
-  // Seed VoiceStyles
+async function seedVoiceStyles() {
   const createdVoiceStyles: any[] = [];
   for (const style of voiceStyles) {
     const created = await prisma.voiceStyle.create({ data: style });
     createdVoiceStyles.push(created);
   }
   console.log(`Seeded ${createdVoiceStyles.length} voice styles`);
+  return createdVoiceStyles;
+}
 
-  // Seed VoiceStylePrices
+async function seedVoiceStylePrices(createdVoiceStyles: any[]) {
   const voiceStylePrices = [
     { price: 0 },
     { price: 250 },
@@ -82,57 +69,31 @@ async function main() {
     await prisma.voiceStylePrice.create({
       data: {
         voiceStyleId: createdVoiceStyles[i].id,
-        price: voiceStylePrices[i].price,
+        price: voiceStylePrices[i % voiceStylePrices.length].price,
       },
     });
   }
   console.log(`Seeded ${createdVoiceStyles.length} voice style prices`);
+}
 
-  // Seed Titles
+async function seedTitles() {
   const createdTitles: any[] = [];
   for (const title of titles) {
     const created = await prisma.title.create({ data: title });
     createdTitles.push(created);
   }
   console.log(`Seeded ${createdTitles.length} titles`);
+  return createdTitles;
+}
 
-  // Seed User Profiles and Relations
-  for (const user of createdUsers) {
-    // Create profile
-    await prisma.userProfile.create({
-      data: {
-        userId: user.id,
-        monthlyMileageGoal: 100.0,
-        selectedTitleId: createdTitles[0].id,
-        selectedIconFrameId: createdIconFrames[0].id,
-        selectedVoiceStyleId: createdVoiceStyles[0].id,
-      },
-    });
-
-    // Grant all items to the first user for testing
-    if (user.id === createdUsers[0].id) {
-      await prisma.userIconFrame.createMany({
-        data: createdIconFrames.map((frame) => ({
-          userId: user.id,
-          iconFrameId: frame.id,
-        })),
-      });
-      await prisma.userVoiceStyle.createMany({
-        data: createdVoiceStyles.map((style) => ({
-          userId: user.id,
-          voiceStyleId: style.id,
-        })),
-      });
-      await prisma.userTitle.createMany({
-        data: createdTitles.map((title) => ({
-          userId: user.id,
-          titleId: title.id,
-        })),
-      });
-      console.log(`Granted all items to ${user.userName}`);
-    }
-  }
-
+async function main() {
+  console.log("Seeding started...");
+  await clearAll();
+  const createdIconFrames = await seedIconFrames();
+  await seedIconFramePrices(createdIconFrames);
+  const createdVoiceStyles = await seedVoiceStyles();
+  await seedVoiceStylePrices(createdVoiceStyles);
+  await seedTitles();
   console.log("Seeding finished.");
 }
 
