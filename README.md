@@ -1,7 +1,7 @@
 # drive-quest-backend
 
 ## version
-npm   10.5.0
+npm   10.5.0  
 node  20.12.2
 
 ## envファイル
