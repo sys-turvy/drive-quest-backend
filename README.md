@@ -1,5 +1,9 @@
 # drive-quest-backend
 
+## version
+npm   10.5.0
+node  20.12.2
+
 ## envファイル
 このサービスのルートフォルダ直下に作成してください
 ```
